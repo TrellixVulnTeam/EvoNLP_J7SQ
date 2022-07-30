@@ -1,0 +1,40 @@
+name: 🚀 Paper Review
+description: Submit a short review about a paper
+title: '[Review]: '
+labels: ['review', 'documentation']
+body:
+  - type: textarea
+    attributes:
+      label: Description
+      description: |
+        > describe motivation and main story behind this paper
+      placeholder: This paper introduces ...
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Theory
+        - Application
+  - type: textarea
+    attributes:
+      label: Contributions
+      placeholder: Compared to previous work, ....
+  - type: textarea
+    attributes:
+      label: Weakness and Concern
+      placeholder: This paper ...
+  - type: textarea
+    attributes:
+      label: Methods
+      description: |
+        > Here you give a detailed descriptions about this paper 
+      placeholder: This paper ...
+  - type: checkboxes
+    id: finish
+    attributes:
+      label: Review Process
+      options:
+        - label: I have already reviewed this paper

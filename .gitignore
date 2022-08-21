@@ -1,4 +1,5 @@
-hide/
+tests/
+examples/
 */paths.py
 assets/
 xprotoexp_tutorial.py

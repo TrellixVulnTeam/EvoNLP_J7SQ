@@ -291,3 +291,7 @@ class Config(object):
                     d[key] = fn(d[fn.follow_name], default_d)
             list_rtn.append(d)
         return list_rtn
+
+    @staticmethod
+    def parse(**kwargs):
+        return Args(**kwargs)

@@ -1,4 +1,5 @@
 from typing import Iterable
+import torch
 import torch.nn as nn
 from Xlearn.utils.layers import tween, flatten
 
@@ -11,7 +12,9 @@ class CNN1D(nn.Sequential):
     >>> channel_sizes = [5, 5, 4, 4, 4, 4, 4, 4, 5]
     >>> model = CNN1D(n_channels, channel_sizes)
     >>> input = torch.randn(10, 3, 4000)
-    >>> output = model(input)  # shape (10, 128, 12)
+    >>> output = model(input)
+    >>> output.shape
+    torch.Size([10, 128, 12])
     """
     
     def __init__(self, n_channels=[24,12], channel_sizes=[5,2], pool_sizes=2, learn_batch=False):
@@ -28,8 +31,10 @@ class CNN1D(nn.Sequential):
         ]
         super().__init__(*flatten(tween(conv, fixed, add_last=True)))
 
-        
 
 
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
 
 

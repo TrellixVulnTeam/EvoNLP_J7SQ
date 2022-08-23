@@ -7,9 +7,11 @@ __all__ = []
 
 def tween(lst, item, add_last=False):
     """
-    >>> a, b = [1,2,3], [#,$]
-    >>> tween(a,b) == [1,#,$,2,#,$,3]
-    >>> tween(a,b,True) == [1,#,$,2,#,$,3,#,$]
+    >>> a, b = [1,2,3], ['#','$']
+    >>> tween(a,b)
+    [1, '#', '$', 2, '#', '$', 3]
+    >>> tween(a,b,True)
+    [1, '#', '$', 2, '#', '$', 3, '#', '$']
     """
     if not isinstance(item, list):
         item = [item]
@@ -34,9 +36,11 @@ def flatten(lst, rtn_lst=True):
 
 def seq_len_to_mask(seq_len, max_len=None):
     """
-    >>> size = torch.randint(3, 10, (3,)) # [3,6,6]
-    >>> seq_len_to_mask(size)             # shape = (3,6) True/False matrix
-    >>> seq_len_to_mask(size, 10)         # shape = (3,10) True/False matrix
+    >>> size = torch.randint(3, 10, (3,)) # e.g., [3,6,6]
+    >>> seq_len_to_mask(size).shape == torch.Size([3,size.max()])
+    True
+    >>> seq_len_to_mask(size, 10).shape   # True/False matrix
+    torch.Size([3, 10])
     """
     if isinstance(seq_len, np.ndarray):
         assert len(np.shape(seq_len)) == 1, f"seq_len can only have one dimension, got {len(np.shape(seq_len))}."
@@ -54,3 +58,8 @@ def seq_len_to_mask(seq_len, max_len=None):
         raise TypeError("Only support 1-d numpy.ndarray or 1-d torch.Tensor.")
 
     return mask
+
+    
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+__all__ = ['Sparsemax']
 
 class Sparsemax(nn.Module):
     __constants__ = ["dim"]

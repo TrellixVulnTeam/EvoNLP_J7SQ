@@ -7,6 +7,8 @@ from datetime import datetime
 from colorama import Fore, Style
 
 
+__all__ = ['timeit', 'color_str']
+
 @contextmanager
 def timed(color='green', bold=False):
     r"""A decorator to print the total time of executing a body function. 

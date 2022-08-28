@@ -1,6 +1,6 @@
 import torch as T
 import torch.nn as nn
-
+from .analysis import *
 
 class RF:
     """Receptive Field

@@ -1,5 +1,6 @@
 from importlib.util import find_spec
 from typing import Callable, Dict, Any, List, Optional
+from functools import update_wrapper
 
 __all__ = ['_TRANSFORMERS_AVAILABLE', '_Registry']
 
@@ -12,7 +13,6 @@ def _module_available(module_path: str) -> bool:
         return find_spec(module_path) is not None
     except ModuleNotFoundError:
         return False
-
 
 _TRANSFORMERS_AVAILABLE = _module_available("transformers")
 

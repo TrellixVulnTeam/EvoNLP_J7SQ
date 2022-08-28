@@ -3,7 +3,7 @@
 import warnings
 
 from sklearn.base import BaseEstimator
-from Xlearn import Warning
+from Xlearn.utils import Warning
 
 
 __all__ = ['Callback']

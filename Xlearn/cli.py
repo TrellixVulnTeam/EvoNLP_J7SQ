@@ -124,6 +124,9 @@ class Args:
     @property
     def d(self):
         return self.__dict__
+    def update(self, **kwargs):
+        for k,v in kwargs.items():
+            self.set(k, v)
     def pop(self,__name):
         return self.__dict__.pop(__name)
     def set(self,__name, __value):
@@ -295,3 +298,4 @@ class Config(object):
     @staticmethod
     def parse(**kwargs):
         return Args(**kwargs)
+

@@ -4,21 +4,14 @@ from Xlearn import __warehouse__
 from torchvision.datasets.mnist import read_image_file, read_label_file
 import numpy as np
 
-__all__ = ['MNIST']
+__all__ = ['TIME']
 
-class MNIST(Dataset):
+class TIME(Dataset):
 
-    __url__ = 'http://yann.lecun.com/exdb/mnist/'
-    __corefile__ = {
-        "trainX": "train-images-idx3-ubyte.gz",
-        "trianY": "train-labels-idx1-ubyte.gz",
-        "testX": "t10k-images-idx3-ubyte.gz",
-        "testY": "t10k-labels-idx1-ubyte.gz"
-    }
-    __name__ = 'MNIST'
+    __name__ = 'TIME'
 
-    @cache_results(_cache_fp=__warehouse__.joinpath('MNIST', 'data.pkl'))
-    def load_data(self, _refresh=False):
+    @cache_results(_cache_fp=__warehouse__.joinpath('TIME', 'data.pkl'))
+    def load_data(self, _refresh=False, category=None):
         data = []
         for data_path in ofind(self.process_folder, '-images-'):
             data.append(read_image_file(data_path).numpy().astype('float32'))
@@ -29,4 +22,3 @@ class MNIST(Dataset):
         target = np.concatenate(target, axis=0)
         return data, target
 
-        

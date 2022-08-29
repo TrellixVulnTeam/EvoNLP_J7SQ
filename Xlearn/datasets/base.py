@@ -1,5 +1,3 @@
-
-
 import os, logging, urllib
 from pathlib import Path
 from tqdm import tqdm
@@ -54,9 +52,13 @@ class Dataset:
                 logger.info("Download successful")
             except:
                 logger.exception("Download failed, please try again")
-            extract_archive(
-                from_path=out_path, to_path=self.process_folder, remove_finished=False
-            )
+            try:
+                "['.bz2', '.gz', '.tar', '.tbz', '.tbz2', '.tgz', '.xz', '.zip']"
+                extract_archive(
+                    from_path=out_path, to_path=self.process_folder, remove_finished=False
+                )
+            except RuntimeError:
+                self.extract(from_path=out_path, to_path=self.process_folder)
         
     def transform(self):
         """ Transform to the general data format

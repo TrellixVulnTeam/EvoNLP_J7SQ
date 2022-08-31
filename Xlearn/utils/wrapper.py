@@ -109,6 +109,8 @@ def doc_string(parent=None):
         return cls
     return _doc_string
 
+    
+
 if __name__ == '__main__':
     from doctest import testmod
     testmod()

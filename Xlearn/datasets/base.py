@@ -20,7 +20,6 @@ class Dataset:
             self.rootdir = __warehouse__.joinpath(self.__name__)
         self._make_dir()
         self._donwload_and_extract()
-        self.load_data()
 
     def load_data(self, *args, **kwargs):
         """

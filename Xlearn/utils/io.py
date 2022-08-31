@@ -1,8 +1,11 @@
 from pathlib import Path
-import os, re, pickle, cloudpickle, hashlib, yaml
+import os, re, pickle, cloudpickle, hashlib, yaml, torch
+import numpy as np
 from typing import Union, Literal
+from functools import partial
+from skorch.utils import is_torch_data_type, to_device, is_geometric_data_type, TORCH_GEOMETRIC_INSTALLED, is_pandas_ndframe, _is_slicedataset
 
-__all__ = ['ojoin', 'ofind', 'pickle_load', 'pickle_dump', 'CloudpickleWrapper']
+__all__ = ['ojoin', 'ofind', 'pickle_load', 'to_tensor', 'pickle_dump', 'CloudpickleWrapper', 'to_numpy', '_is_slicedataset']
 
 def ojoin(a, b):
     return os.path.join(a,b)
@@ -13,8 +16,52 @@ def ofind(path, pattern):
         for each in file:
             if pattern.search(each):
                 yield ojoin(path, each)
+                
+                
+def to_numpy(X):
+    if isinstance(X, np.ndarray):
+        return X
+    if isinstance(X, dict):
+        return {key: to_numpy(val) for key, val in X.items()}
+    if is_pandas_ndframe(X):
+        return X.values
+    if isinstance(X, (tuple, list)):
+        return type(X)(to_numpy(x) for x in X)
+    if _is_slicedataset(X):
+        return np.asarray(X)
+    if not is_torch_data_type(X):
+        raise TypeError("Cannot convert this data type to a numpy array.")
+    if X.is_cuda: X = X.cpu()
+    if hasattr(X, 'is_mps') and X.is_mps: X = X.cpu()
+    if X.requires_grad: X = X.detach()
+    return X.numpy()
 
-
+# pylint: disable=not-callable
+def to_tensor(X, device):
+    """@Overwrite skorch function
+    """
+    def transform(X):
+        if X.dtype=='float64': X = X.astype(np.float32)
+        elif X.dtype == 'int32': X = X.astype(np.int64)
+        return X
+    to_tensor_ = partial(to_tensor, device=device)
+    if isinstance(X, np.ndarray):
+        X = transform(X)
+        try:
+            return torch.as_tensor(X, device=device)
+        except TypeError:
+            return X
+    if is_torch_data_type(X):
+        return to_device(X, device)
+    if TORCH_GEOMETRIC_INSTALLED and is_geometric_data_type(X):
+        return to_device(X, device)
+    if hasattr(X, 'convert_to_tensors'):
+        return X.convert_to_tensors('pt')   # huggingface API
+    if isinstance(X, dict):
+        return {key: to_tensor_(val) for key, val in X.items()}
+    if isinstance(X, (list, tuple)):
+        return [to_tensor_(x) for x in X]
+    return X
 
 def hashcode(s: Union[Literal['str'], Literal['dict']]):
     if isinstance(s, dict):

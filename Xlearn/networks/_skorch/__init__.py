@@ -1,11 +1,11 @@
-import torch
 from skorch import NeuralNetClassifier, NeuralNetRegressor
 from types import FunctionType
 from functools import update_wrapper, wraps
-from Xlearn.utils import match_args, doc_string
+from Xlearn.utils import doc_string, to_tensor, _is_slicedataset
 from Xlearn.callback import EpochScoring, PassthroughScoring
+from .data import Xdata
 
-__all__ = ['classify', 'regressor', 'Classifier']
+__all__ = ['classify', 'regressor', 'Classifier', 'Xdata']
 
 class base:
     """Skorch Wrapper (see https://skorch.readthedocs.io/en/latest/classifier.html for detail)
@@ -95,7 +95,20 @@ class Classifier(NeuralNetClassifier):
                 lower_is_better=False,
             )),
         ]
+    
+    def infer(self, x, **fit_params):
+        """Overwrite skorch::NeuralNet::infer to allow flexible type of inputs
+        """
+        x = to_tensor(x, device=self.device)
+        if isinstance(x, dict):
+            x_dict = self._merge_x_and_fit_params(x, fit_params)
+            return self.module_(**x_dict)
+        return self.module_(x, **fit_params)
 
+    def get_dataset(self, X, y=None):
+        if _is_slicedataset(X):
+            return X
+        return super().get_dataset(X, y)
 
 
 class classify(base):

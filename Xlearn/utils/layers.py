@@ -3,7 +3,7 @@ from typing import Iterable
 import numpy as np
 import torch
 
-__all__ = []
+__all__ = ['tween', 'seq_len_to_mask']
 
 def tween(lst, item, add_last=False):
     """

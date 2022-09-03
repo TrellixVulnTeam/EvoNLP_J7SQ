@@ -1,11 +1,12 @@
 from pathlib import Path
 import os, re, pickle, cloudpickle, hashlib, yaml, torch
 import numpy as np
-from typing import Union, Literal
+from typing import Union, Literal, Mapping
 from functools import partial
 from skorch.utils import is_torch_data_type, to_device, is_geometric_data_type, TORCH_GEOMETRIC_INSTALLED, is_pandas_ndframe, _is_slicedataset
+from torch.nn.utils.rnn import PackedSequence
 
-__all__ = ['ojoin', 'ofind', 'pickle_load', 'to_tensor', 'pickle_dump', 'CloudpickleWrapper', 'to_numpy', '_is_slicedataset']
+__all__ = ['ojoin', 'ofind', 'pickle_load', 'to_tensor', 'pickle_dump', 'CloudpickleWrapper', 'to_numpy', '_is_slicedataset', 'to_device']
 
 def ojoin(a, b):
     return os.path.join(a,b)
@@ -17,6 +18,16 @@ def ofind(path, pattern):
             if pattern.search(each):
                 yield ojoin(path, each)
                 
+def to_device(X, device):
+    if device is None: 
+        return X
+    if isinstance(X, Mapping):
+        return type(X)({key: to_device(val, device) for key, val in X.items()})
+    if isinstance(X, (tuple, list)) and (type(X) != PackedSequence):
+        return type(X)(to_device(x, device) for x in X)
+    if isinstance(X, torch.distributions.distribution.Distribution):
+        return X
+    return X.to(device)
                 
 def to_numpy(X):
     if isinstance(X, np.ndarray):

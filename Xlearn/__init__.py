@@ -1,5 +1,5 @@
 from .cli import *
-from .utils import _Registry, seed_all, SEEDS, pickle_load
+from .utils import _Registry, seed_all, SEEDS, pickle_load, to_tensor
 from .constant import *
 from .networks import classify, regressor
 from .exp import run_experiment

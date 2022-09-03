@@ -1,11 +1,13 @@
 from skorch import NeuralNetClassifier, NeuralNetRegressor
+from skorch.scoring import loss_scoring
 from types import FunctionType
 from functools import update_wrapper, wraps
 from Xlearn.utils import doc_string, to_tensor, _is_slicedataset
-from Xlearn.callback import EpochScoring, PassthroughScoring
-from .data import Xdata
+from Xlearn.callback import EpochScoring, PassthroughScoring, EpochTimer, PrintLog, LossEpoch
+from .data import *
 
-__all__ = ['classify', 'regressor', 'Classifier', 'Xdata']
+
+__all__ = ['classify', 'regressor', 'Classifier', 'Xdata', 'DisabledCV']
 
 class base:
     """Skorch Wrapper (see https://skorch.readthedocs.io/en/latest/classifier.html for detail)
@@ -65,35 +67,43 @@ def get_accelerator(module, kwargs):
         """NeuralNetClassifier with accelerate support"""
     return new_module, kwargs
 
-
 class Classifier(NeuralNetClassifier):
-    
+
+    def score(self, X, y=None):
+        return loss_scoring(self, X, y)
+
     def use_amp(self):
         kwargs = self.get_params(deep=False)
         cls, kwargs = get_accelerator(NeuralNetClassifier, kwargs)
         new_self = cls(**kwargs)
         self.__dict__.update(new_self.__dict__)
 
+    def get_params_for(self, prefix):
+        kwargs = super().get_params_for(prefix)
+        if prefix == 'iterator_train':
+            kwargs = {**kwargs, 'shuffle': True}
+        return kwargs
 
-    def disable_print(self):
+    def set_default_callback(self, *names):
         """Disable all default callbacks, this should be called before fit
         """
-        self.get_default_callbacks = self.__get_default_callbacks
+        callbacks = []
+        for name, cb, kwargs in self.__get_default_callbacks():
+            if name in names:
+                callbacks.append((name, cb(**kwargs)))
+        def get_default_callbacks(): return callbacks
+        self.get_default_callbacks = get_default_callbacks
         
     def __get_default_callbacks(self):
-        return [
-            ('train_loss', PassthroughScoring(
-                name='train_loss',
-                on_train=True,
-            )),
-            ('valid_loss', PassthroughScoring(
-                name='valid_loss',
-            )),
-            ('valid_acc', EpochScoring(
-                'accuracy',
-                name='valid_acc',
-                lower_is_better=False,
-            )),
+        yield from [
+            ('valid_acc', EpochScoring, dict(scoring='accuracy', name='valid_acc', lower_is_better=False)),
+            ('epoch_timer', EpochTimer, dict()),
+            ('print_log', PrintLog, dict()),
+            ('f1_binary', EpochScoring, dict(scoring='f1', lower_is_better=False, name='valid_f1', on_train=False, use_caching=True)),
+            ('prec_binary', EpochScoring, dict(scoring='precision', lower_is_better=False, name='valid_prec', on_train=False, use_caching=True)),
+            ('rec_binary', EpochScoring, dict(scoring='recall', lower_is_better=False, name='valid_rec', on_train=False, use_caching=True)),
+            ('train_loss', LossEpoch, dict(on_train=True)),
+            ('valid_loss', LossEpoch, dict(on_train=False)),
         ]
     
     def infer(self, x, **fit_params):
@@ -110,6 +120,15 @@ class Classifier(NeuralNetClassifier):
             return X
         return super().get_dataset(X, y)
 
+    def check_training_readiness(self):
+        self.__pre_init__()
+        return super().check_training_readiness()
+    
+    def __pre_init__(self):
+        pass
+
+    def fit(self, X, y, **fit_params):
+        return super().fit(X, y, **fit_params)
 
 class classify(base):
     def __init__(self, **kwargs):
@@ -120,7 +139,6 @@ class regressor(base):
     def __init__(self, **kwargs):
         super(regressor, self).__init__(NeuralNetRegressor, **kwargs)
         self.__name__ = 'Regressor'
-
 
     
 if __name__ == "__main__":

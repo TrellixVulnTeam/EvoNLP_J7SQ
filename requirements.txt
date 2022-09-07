@@ -1,0 +1,17 @@
+accelerate==0.12.0
+cloudpickle==2.0.0
+colorama==0.4.4
+coloredlogs==15.0.1
+comet_ml==3.31.8
+dstoolbox==0.12.1
+matplotlib==3.5.1
+numpy==1.21.2
+optuna==2.10.0
+pandas==1.4.3
+plotly==5.8.0
+PyYAML==6.0
+scikit_learn==1.1.2
+scipy==1.8.0
+seaborn==0.11.2
+skorch==0.11.0
+tqdm==4.63.0

@@ -18,7 +18,29 @@ class IMDB(Dataset):
     def extract(self, from_path, to_path):
         import tarfile
         with tarfile.open(from_path, 'r:gz') as f:
-            f.extractall(path=to_path)
+            
+            import os
+            
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(f, path=to_path)
 
     @cache_results(_cache_fp=__warehouse__.joinpath('IMDB', 'data.pkl'))
     def load_data(self, _refresh=False):
